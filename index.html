@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="hy">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ScentHouse — Օծանելիքի Սրահ</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <!-- Գլխամաս (Header) -->
+    <header>
+        <div class="logo">ScentHouse</div>
+        
+        <!-- Որոնման և ֆիլտրման դաշտեր -->
+        <div class="search-filter-wrapper" style="display: flex; gap: 10px; flex-grow: 1; max-width: 600px; margin: 0 20px;">
+            <input type="text" class="search-bar" id="searchInput" placeholder="Որոնել ձեր բույրը..." oninput="handleSearch()" style="flex-grow: 2;">
+            
+            <!-- Գնով տեսակավորման սելեկտ -->
+            <select id="priceSort" onchange="handleSort()" style="background: #111; color: #d4af37; border: 1px solid #d4af37; padding: 5px 10px; border-radius: 4px; cursor: pointer;">
+                <option value="default">Ստանդարտ</option>
+                <option value="lowToHigh">Գինը՝ աճման ↑</option>
+                <option value="highToLow">Գինը՝ նվազման ↓</option>
+            </select>
+        </div>
+
+        <div class="actions">
+            <button class="btn-admin" onclick="openAdmin()">Admin</button>
+            <button class="btn-cart" onclick="toggleCart()">Զամբյուղ (<span id="cartCount">0</span>)</button>
+        </div>
+    </header>
+
+    <!-- Գլխավոր ցուցափեղկ -->
+    <main class="products-container" id="productsList">
+        <!-- Ապրանքները կգեներացվեն script.js-ից -->
+    </main>
+
+    <!-- ԱՊՐԱՆՔԻ ՄԵԾԱՑՎԱԾ ԴԻՏՄԱՆ ՄՈԴԱԼ -->
+    <div id="productModal" class="modal">
+        <div class="modal-content product-detail-modal">
+            <span class="close-modal" onclick="closeProductModal()">X</span>
+            <div class="product-detail-flex">
+                <div class="product-detail-img" id="modalProductImg"></div>
+                <div class="product-detail-info">
+                    <h2 id="modalProductName">Ապրանքի Անուն</h2>
+                    <p class="product-brand" id="modalProductBrand">Բրենդ</p>
+                    <p class="product-description" id="modalProductDesc">Այս օծանելիքն ունի նուրբ և երկարատև բույր, որն ընդգծում է ձեր անհատականությունը, թողնելով անմոռանալի տպավորություն։</p>
+                    <div class="product-detail-price" id="modalProductPrice">0 ֏</div>
+                    <button class="gold-btn" id="modalAddToCartBtn">Ավելացնել Զամբյուղ</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ԶԱՄԲՅՈՒՂԻ ՄՈԴԱԼ -->
+    <div id="cartModal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal" onclick="toggleCart()">X</span>
+            <h2>Ձեր զամբյուղը</h2>
+            <div id="cartItemsContainer"></div>
+            <div class="cart-total" id="cartTotalSection" style="display: none;">
+                Ընդհանուր: <span id="cartTotalPrice">0</span> ֏
+                <button class="gold-btn order-btn" onclick="openOrderForm()">Անցնել Պատվիրմանը</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ՊԱՏՎԵՐԻ ՄՈԴԱԼ -->
+    <div id="orderModal" class="modal">
+        <div class="modal-content order-form">
+            <span class="close-modal" onclick="closeOrderForm()">X</span>
+            <h2>Առաքման Տվյալներ</h2>
+            <input type="text" id="custName" placeholder="Անուն Ազգանուն" required>
+            <input type="tel" id="custPhone" placeholder="Հեռախոսահամար" required>
+            <input type="text" id="custAddress" placeholder="Առաքման հասցե" required>
+            <button class="gold-btn order-btn" onclick="submitOrder()">Հաստատել Պատվերը</button>
+        </div>
+    </div>
+
+    <!-- Firebase SDK-ների միացում Importmap-ի միջոցով (v9+ Modular բրաուզերի համար) -->
+    <script type="importmap">
+      {
+        "imports": {
+          "firebase/app": "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js",
+          "firebase/analytics": "https://www.gstatic.com/firebasejs/9.22.0/firebase-analytics.js",
+          "firebase/firestore": "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js"
+        }
+      }
+    </script>
+
+    <!-- Քո հիմնական JavaScript ֆայլը՝ որպես մոդուլ -->
+    <script type="module" src="script.js"></script>
+</body>
+</html>
