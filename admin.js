@@ -187,17 +187,17 @@ function editProduct(id, encodedData) {
     document.getElementById('editProdStock').value = product.stock;
     document.getElementById('editProdDesc').value = product.description || "";
     
-    // Ցուցադրում ենք ընթացիկ նկարը մոդալի նախադիտման մեջ
+    // ՑՈՒՑԱԴՐՈՒՄ ԵՆՔ ԸՆԹԱՑԻԿ ՆԿԱՐԸ ՄՈԴԱԼԻ ՄԵՋ
     const preview = document.getElementById('editImagePreview');
     if (preview) {
-        preview.src = product.image;
-        preview.style.display = "block";
+        preview.src = product.image; // Տեղադրում ենք բազայի նկարի կոդը
+        preview.style.display = "block"; // ԱՊԱՀՈՎՈՒՄ ԵՆՔ, ՈՐ ՆԿԱՐԸ ԵՐԵՎԱ (display: none-ը փոխում ենք block)
     }
     
     // Լռելյայն հին նկարն ենք պահում, եթե նորը չընտրվի
     editImageBase64 = product.image;
 
-    // Բացում ենք մոդալը (դասական ոճի փոփոխություն կամ CSS դասի ավելացում)
+    // Բացում ենք մոդալը
     const modal = document.getElementById('editProductModal');
     if (modal) modal.style.display = "flex";
 }
