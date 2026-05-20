@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="hy">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ScentHouse — Admin Panel</title>
+    <!-- Կարող ես օգտագործել նույն ոճերը կամ ավելացնել admin-ի համար -->
+    <link rel="stylesheet" href="style.css">
+    <style>
+        body { background: #0b0b0b; color: #fff; font-family: sans-serif; padding: 20px; }
+        .admin-container { max-width: 1200px; margin: 0 auto; display: grid; grid-template-columns: 1fr 1fr; gap: 30px; }
+        .admin-section { background: #141414; padding: 20px; border-radius: 8px; border: 1px solid #d4af37; }
+        h2 { color: #d4af37; border-bottom: 1px solid #333; padding-bottom: 10px; margin-top: 0; }
+        input, textarea { width: 100%; padding: 10px; margin-bottom: 12px; background: #222; border: 1px solid #444; color: #fff; border-radius: 4px; box-sizing: border-box; }
+        input:focus, textarea:focus { border-color: #d4af37; outline: none; }
+        .order-card { background: #1c1c1c; padding: 15px; border-radius: 6px; margin-bottom: 15px; border-left: 4px solid #d4af37; }
+        .order-meta { font-size: 13px; color: #888; margin-bottom: 8px; }
+        .order-items { background: #111; padding: 10px; border-radius: 4px; font-size: 14px; margin: 10px 0; }
+        .btn-back { background: #222; color: #fff; border: 1px solid #444; padding: 10px 20px; cursor: pointer; border-radius: 4px; margin-bottom: 20px; display: inline-block; text-decoration: none; text-align: center; }
+        .btn-back:hover { background: #333; }
+    </style>
+</head>
+<body>
+
+    <a href="index.html" class="btn-back">← Վերադառնալ Գլխավոր Էջ</a>
+
+    <div class="admin-container">
+        
+        <!-- ԱՊՐԱՆՔ ԱՎԵԼԱՑՆԵԼՈՒ ԲԱԺԻՆ -->
+        <div class="admin-section">
+            <h2>Ավելացնել Նոր Օծանելիք</h2>
+            <div id="productForm">
+                <input type="text" id="prodName" placeholder="Ապրանքի Անուն (օր.՝ Bleu de Chanel)" required>
+                <input type="text" id="prodBrand" placeholder="Բրենդ (օր.՝ Chanel)" required>
+                <input type="number" id="prodPrice" placeholder="Գինը (ՀՀ դրամով, միայն թիվ)" required>
+                <input type="number" id="prodStock" placeholder="Քանակը պահեստում (Թաքնված է հաճախորդից)" required>
+                <input type="url" id="prodImage" placeholder="Նկարի 4K հղումը (URL)" required>
+                <textarea id="prodDesc" rows="4" placeholder="Ապրանքի նկարագրություն..."></textarea>
+                <button class="gold-btn" id="addProdBtn" style="width: 100%;">Ավելացնել Ցուցափեղկին</button>
+            </div>
+        </div>
+
+        <!-- ՊԱՏՎԵՐՆԵՐԻ ՑՈՒՑԱԴՐՄԱՆ ԲԱԺԻՆ -->
+        <div class="admin-section">
+            <h2>Ստացված Պատվերներ (Real-time)</h2>
+            <div id="ordersListContainer">
+                <p style="color: #888; text-align: center;">Պատվերներ չկան...</p>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Firebase SDK Importmap -->
+    <script type="importmap">
+      {
+        "imports": {
+          "firebase/app": "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js",
+          "firebase/firestore": "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js"
+        }
+      }
+    </script>
+
+    <!-- Admin JavaScript Մոդուլ -->
+    <script type="module" src="admin.js"></script>
+</body>
+</html>
