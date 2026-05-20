@@ -1,4 +1,4 @@
-import { initializeApp } from "firebase/app";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
 import { 
     getFirestore, 
     collection, 
@@ -8,7 +8,7 @@ import {
     orderBy, 
     doc, 
     deleteDoc 
-} from "firebase/firestore";
+} from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
 
 // FIREBASE CONFIGURATION
 const firebaseConfig = {
@@ -24,9 +24,9 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-let uploadedImageUrl = ""; // Այստեղ կպահվի ImgBB-ի տված օնլայն հղումը
+let finalImageBase64 = ""; // Այստեղ կպահվի նկարի տեքստային կոդը
 
-// ՆԿԱՐԸ ՊԱՏԿԵՐԱՍՐԱՀԻՑ ԸՆՏՐԵԼՈՒ ԵՎ ԱՎՏՈՄԱՏ IMGBB ՈՒՂԱՐԿԵԼՈՒ ՏՐԱՄԱԲԱՆՈՒԹՅՈՒՆԸ
+// 1. ՆԿԱՐԸ ՊԱՏԿԵՐԱՍՐԱՀԻՑ ԸՆՏՐԵԼՈՒ ԵՎ ՏԵՔՍՏԻ (BASE64) ՎԵՐԱԾԵԼՈՒ ՖՈՒՆԿՑԻԱՆ
 document.getElementById('prodImageFile').addEventListener('change', function(e) {
     const file = e.target.files[0];
     if (!file) return;
@@ -39,45 +39,23 @@ document.getElementById('prodImageFile').addEventListener('change', function(e) 
     const statusDiv = document.getElementById('uploadStatus');
     const label = document.getElementById('fileLabel');
     statusDiv.style.display = "block";
-    statusDiv.innerText = "Նկարը մշակվում և բեռնվում է ամպային բազա...";
+    statusDiv.innerText = "Նկարը մշակվում է...";
     statusDiv.style.color = "#d4af37";
+
+    // Օգտագործում ենք FileReader՝ նկարը տեքստ սարքելու համար (ՉԻ ՕԳՏԱԳՈՐԾՈՒՄ ԻՆՏԵՐՆԵՏ)
+    const reader = new FileReader();
+    reader.onloadend = function() {
+        finalImageBase64 = reader.result; // Նկարի ամբողջական տեքստային կոդը
+        
+        statusDiv.innerText = "✓ Նկարը պատրաստ է ավելացման";
+        statusDiv.style.color = "#00ff00";
+        label.innerText = "✓ Նկարը ընտրված է";
+    };
     
-    // Անջատում ենք ավելացնելու կոճակը, մինչև նկարը պատրաստ լինի
-    document.getElementById('addProdBtn').disabled = true;
-
-    // Պատրաստում ենք ֆայլը ուղարկելու համար
-    const formData = new FormData();
-    formData.append("image", file);
-
-    // Օգտագործում ենք ImgBB API անվճար հանրային բանալին
-    const apiKey = "6d20715c116a502cf9e0cc0d39e08fcb"; 
-
-    fetch(`https://api.imgbb.com/1/upload?key=${apiKey}`, {
-        method: "POST",
-        body: formData
-    })
-    .then(response => response.json())
-    .then(data => {
-        if(data.success) {
-            uploadedImageUrl = data.data.url; // Ստանում ենք նկարի մաքուր 4K հղումը
-            statusDiv.innerText = "✓ Նկարը հաջողությամբ բեռնվեց բազա";
-            statusDiv.style.color = "#00ff00";
-            label.innerText = "✓ Նկարը ընտրված է";
-        } else {
-            throw new Error("ImgBB upload failed");
-        }
-        // Միացնում ենք ավելացնելու կոճակը
-        document.getElementById('addProdBtn').disabled = false;
-    })
-    .catch(error => {
-        console.error("Error:", error);
-        statusDiv.innerText = "Նկարի բեռնման սխալ, փորձեք կրկին:";
-        statusDiv.style.color = "crimson";
-        document.getElementById('addProdBtn').disabled = false;
-    });
+    reader.readAsDataURL(file);
 });
 
-// ԱՊՐԱՆՔԻ ԱՎԵԼԱՑՈՒՄ ԲԱԶԱՅԻՆ
+// 2. ԱՊՐԱՆՔԻ ԱՎԵԼԱՑՈՒՄ ԲԱԶԱՅԻՆ
 document.getElementById('addProdBtn').addEventListener('click', async () => {
     const name = document.getElementById('prodName').value;
     const brand = document.getElementById('prodBrand').value;
@@ -85,25 +63,26 @@ document.getElementById('addProdBtn').addEventListener('click', async () => {
     const stock = Number(document.getElementById('prodStock').value);
     const description = document.getElementById('prodDesc').value;
 
-    if (!name || !brand || !price || !stock || !uploadedImageUrl) {
+    if (!name || !brand || !price || !stock || !finalImageBase64) {
         alert("Խնդրում ենք լրացնել բոլոր դաշտերը և ընտրել նկար պատկերասրահից։");
         return;
     }
 
     try {
+        // Ավելացնում ենք Firestore "products" հավաքածուի մեջ
         await addDoc(collection(db, "products"), {
             name: name,
             brand: brand,
             price: price,
             stock: stock,
-            image: uploadedImageUrl, // Բազա է գնում ImgBB-ի ստեղծած հղումը
+            image: finalImageBase64, // Բազա է գնում հենց նկարի տեքստը
             description: description,
             createdAt: new Date()
         });
 
         alert(`«${name}» օծանելիքը հաջողությամբ ավելացվեց բազա:`);
         
-        // Ֆորմայի մաքրում
+        // Մաքրում ենք դաշտերը հաջորդ ապրանքի համար
         document.getElementById('prodName').value = "";
         document.getElementById('prodBrand').value = "";
         document.getElementById('prodPrice').value = "";
@@ -112,7 +91,7 @@ document.getElementById('addProdBtn').addEventListener('click', async () => {
         document.getElementById('imagePreview').style.display = "none";
         document.getElementById('uploadStatus').style.display = "none";
         document.getElementById('fileLabel').innerText = "📸 Ընտրել նկարը պատկերասրահից";
-        uploadedImageUrl = ""; 
+        finalImageBase64 = ""; 
 
     } catch (error) {
         console.error("Error adding document: ", error);
@@ -120,7 +99,7 @@ document.getElementById('addProdBtn').addEventListener('click', async () => {
     }
 });
 
-// ՊԱՏՎԵՐՆԵՐԻ ՍՏԱՑՈՒՄ ԻՐԱԿԱՆ ԺԱՄԱՆԱԿՈՒՄ
+// 3. ՊԱՏՎԵՐՆԵՐԻ ՍՏԱՑՈՒՄ ԻՐԱԿԱՆ ԺԱՄԱՆԱԿՈՒՄ (REAL-TIME)
 const ordersCollectionRef = collection(db, "orders");
 const q = query(ordersCollectionRef, orderBy("createdAt", "desc"));
 
@@ -137,6 +116,7 @@ onSnapshot(q, (snapshot) => {
         const order = orderDoc.data();
         const orderId = orderDoc.id;
 
+        // Հավաքում ենք պատվիրված ապրանքների HTML-ը
         let itemsHtml = "";
         if (order.items && Array.isArray(order.items)) {
             order.items.forEach(item => {
@@ -144,12 +124,14 @@ onSnapshot(q, (snapshot) => {
             });
         }
 
+        // Ստուգում ենք ամսաթիվը
         let dateString = "Նոր պատվեր";
         if (order.createdAt) {
             const date = order.createdAt.toDate();
             dateString = date.toLocaleString('hy-AM');
         }
 
+        // Ավելացնում ենք պատվերի քարտը էջին
         container.innerHTML += `
             <div class="order-card" id="order-${orderId}">
                 <div class="order-meta">Ժամանակ՝ ${dateString}</div>
@@ -176,6 +158,7 @@ onSnapshot(q, (snapshot) => {
     });
 });
 
+// 4. ՊԱՏՎԵՐ ՋՆՋԵԼՈՒ ՖՈՒՆԿՑԻԱՆ
 async function deleteOrder(id) {
     if (confirm("Ցանկանու՞մ եք ջնջել այս պատվերը պատմությունից:")) {
         try {
@@ -185,4 +168,6 @@ async function deleteOrder(id) {
         }
     }
 }
+
+// Քանի որ սա type="module" է, ֆունկցիան կցում ենք window-ին, որ HTML-ի button-ը տեսնի այն
 window.deleteOrder = deleteOrder;
