@@ -299,3 +299,79 @@ header {
 .order-form input:focus {
     border-color: #d4af37;
 }
+
+/* ========================================== */
+/* ԱԴՄԻՆ ՊԱՆԵԼԻ ՀԱՐՄԱՐԵՑՈՒՄ ՀԵՌԱԽՈՍՆԵՐԻՆ       */
+/* ========================================== */
+
+@media (max-width: 768px) {
+    /* 1. Ադմինի էջի հիմնական կոնտեյները բերում ենք իրար տակ */
+    .admin-container {
+        display: flex;
+        flex-direction: column !important;
+        gap: 20px;
+        padding: 10px !important;
+    }
+
+    /* 2. Ապրանք ավելացնելու բլոկը (ձախ կողմը) դարձնում ենք լիարժեք լայնքով */
+    .form-section {
+        width: 100% !important;
+        max-width: 100% !important;
+        box-sizing: border-box;
+        padding: 15px !important;
+    }
+
+    /* Ադմինի input-ները և կոճակները մեծացնում ենք, որ մատով հեշտ լինի սեղմել */
+    .form-section input, 
+    .form-section textarea, 
+    .form-section select, 
+    .form-section button,
+    #fileLabel {
+        font-size: 16px !important; /* Կանխում է iPhone-ների տհաճ Zoom լինելը գրելիս */
+        padding: 12px !important;
+        width: 100% !important;
+        box-sizing: border-box;
+    }
+
+    /* 3. Պատվերների բաժինը (աջ կողմը) */
+    .orders-section {
+        width: 100% !important;
+        max-width: 100% !important;
+        padding: 10px !important;
+    }
+
+    #ordersListContainer {
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+    }
+
+    /* Պատվերի ամեն մի քարտը հեռախոսի վրա */
+    .order-card {
+        padding: 15px !important;
+        width: 100% !important;
+        box-sizing: border-box;
+    }
+
+    /* Պատվերի ներսի «Ընդհանուր գումարը» և «Ջնջել» կոճակը բերում ենք իրար տակ */
+    .order-card div[style*="display:flex"], 
+    .order-card div[style*="display: flex"] {
+        flex-direction: column !important;
+        align-items: flex-start !important;
+        gap: 12px !important;
+    }
+
+    /* Ջնջելու կոճակը դարձնում ենք մեծ՝ էկրանի լայնքով, որ հեշտ սեղմվի */
+    .order-card button {
+        width: 100% !important;
+        padding: 10px !important;
+        text-align: center;
+    }
+
+    /* 4. Նկարի նախադիտումը (Preview) */
+    #imagePreview {
+        max-width: 100% !important;
+        width: 100% !important;
+        height: auto !important;
+    }
+}
