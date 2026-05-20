@@ -1,15 +1,6 @@
-import { initializeApp } from "firebase/app";
-import { 
-    getFirestore, 
-    collection, 
-    addDoc, 
-    onSnapshot, 
-    query, 
-    orderBy, 
-    doc, 
-    deleteDoc,
-    updateDoc
-} from "firebase/firestore";
+// Ջնջիր հին import-ները և փոխարինիր սրանցով՝ ուղիղ HTML-ի գլոբալ օբյեկտից
+const firebase = window.firebase;
+const db = window.db; // Եթե ներքևում արդեն ունես const db = getFirestore(), սա ուղղակի կփոխարինի դրան
 // FIREBASE CONFIGURATION
 const firebaseConfig = {
   apiKey: "AIzaSyCDyaaJoqgLlxsqglqMT-AfEk1abHhpWU0",
