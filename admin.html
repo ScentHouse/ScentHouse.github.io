@@ -7,11 +7,13 @@
     <link rel="stylesheet" href="style.css">
     <style>
         body { background: #0b0b0b; color: #fff; font-family: sans-serif; padding: 20px; }
-        .admin-container { max-width: 1200px; margin: 0 auto; display: grid; grid-template-columns: 1fr 1fr; gap: 30px; }
-        .admin-section { background: #141414; padding: 20px; border-radius: 8px; border: 1px solid #d4af37; }
+        /* Փոխում ենք grid-ը, որ աղյուսակը գեղեցիկ տեղավորվի ներքևում */
+        .admin-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-bottom: 30px; }
+        .admin-container { max-width: 1200px; margin: 0 auto; }
+        .admin-section { background: #141414; padding: 20px; border-radius: 8px; border: 1px solid #d4af37; margin-bottom: 30px; }
         h2 { color: #d4af37; border-bottom: 1px solid #333; padding-bottom: 10px; margin-top: 0; }
-        input, textarea { width: 100%; padding: 10px; margin-bottom: 12px; background: #222; border: 1px solid #444; color: #fff; border-radius: 4px; box-sizing: border-box; }
-        input:focus, textarea:focus { border-color: #d4af37; outline: none; }
+        input, textarea, select { width: 100%; padding: 10px; margin-bottom: 12px; background: #222; border: 1px solid #444; color: #fff; border-radius: 4px; box-sizing: border-box; }
+        input:focus, textarea:focus, select:focus { border-color: #d4af37; outline: none; }
         .file-input-wrapper { margin-bottom: 12px; }
         .file-input-label { display: block; background: #222; border: 1px dashed #d4af37; color: #d4af37; padding: 12px; text-align: center; border-radius: 4px; cursor: pointer; font-weight: bold; }
         .file-input-label:hover { background: #1a1a1a; }
@@ -22,6 +24,22 @@
         .btn-back { background: #222; color: #fff; border: 1px solid #444; padding: 10px 20px; cursor: pointer; border-radius: 4px; margin-bottom: 20px; display: inline-block; text-decoration: none; text-align: center; }
         .btn-back:hover { background: #333; }
         .upload-status { font-size: 13px; color: #aaa; margin-top: -5px; margin-bottom: 10px; display: none; }
+
+        /* ԱՊՐԱՆՔՆԵՐԻ ԱՂՅՈՒՍԱԿԻ ՍՏԻԼԵՐԸ */
+        .table-responsive { overflow-x: auto; margin-top: 15px; }
+        .admin-products-table { width: 100%; border-collapse: collapse; text-align: left; background: #141414; color: #fff; font-size: 14px; }
+        .admin-products-table th, .admin-products-table td { padding: 12px; border-bottom: 1px solid #222; }
+        .admin-products-table th { background-color: #1a1a1a; color: #d4af37; font-weight: bold; text-transform: uppercase; font-size: 12px; letter-spacing: 0.5px; }
+        .admin-products-table tr:hover { background: #1c1c1c; }
+        .btn-action { background: none; border: none; font-size: 16px; cursor: pointer; padding: 5px 8px; transition: transform 0.2s; }
+        .btn-action:hover { transform: scale(1.2); }
+
+        /* ԽՄԲԱԳՐՄԱՆ ՄՈԴԱԼ ՊԱՏՈՒՀԱՆ (EDIT MODAL) */
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.85); justify-content: center; align-items: center; z-index: 2000; backdrop-filter: blur(5px); }
+        .modal-content { background: #141414; border: 1px solid #d4af37; padding: 25px; width: 450px; max-width: 90%; position: relative; border-radius: 8px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); color: #fff; }
+        .close-modal { position: absolute; right: 20px; top: 15px; font-size: 24px; cursor: pointer; color: #888; transition: color 0.2s; }
+        .close-modal:hover { color: #ff4757; }
+        .modal label { display: block; font-size: 13px; color: #d4af37; margin-bottom: 5px; font-weight: bold; }
     </style>
 </head>
 <body>
@@ -30,37 +48,98 @@
 
     <div class="admin-container">
         
-        <!-- ԱՊՐԱՆՔ ԱՎԵԼԱՑՆԵԼՈՒ ԲԱԺԻՆ -->
-        <div class="admin-section">
-            <h2>Ավելացնել Նոր Օծանելիք</h2>
-            <div id="productForm">
-                <input type="text" id="prodName" placeholder="Ապրանքի Անուն (օր.՝ Bleu de Chanel)" required>
-                <input type="text" id="prodBrand" placeholder="Բրենդ (օր.՝ Chanel)" required>
-                <input type="number" id="prodPrice" placeholder="Գինը (ՀՀ դրամով, միայն թիվ)" required>
-                <input type="number" id="prodStock" placeholder="Քանակը պահեստում" required>
-                
-                <!-- Պատկերասրահից նկար ընտրելու դաշտ -->
-                <div class="file-input-wrapper">
-                    <label for="prodImageFile" class="file-input-label" id="fileLabel">📸 Ընտրել նկարը պատկերասրահից</label>
-                    <input type="file" id="prodImageFile" accept="image/*" style="display: none;">
-                    <div class="upload-status" id="uploadStatus">Մշակվում է...</div>
-                    <img id="imagePreview" alt="Նախադիտում">
+        <!-- Վերևի երկսյունակ ցանցը (Ավելացում և Պատվերներ) -->
+        <div class="admin-grid">
+            
+            <!-- ԱՊՐԱՆՔ ԱՎԵԼԱՑՆԵԼՈՒ ԲԱԺԻՆ -->
+            <div class="admin-section">
+                <h2>Ավելացնել Նոր Օծանելիք</h2>
+                <div id="productForm">
+                    <input type="text" id="prodName" placeholder="Ապրանքի Անուն (օր.՝ Bleu de Chanel)" required>
+                    <input type="text" id="prodBrand" placeholder="Բրենդ (օր.՝ Chanel)" required>
+                    <input type="number" id="prodPrice" placeholder="Գինը (ՀՀ դրամով, միայն թիվ)" required>
+                    <input type="number" id="prodStock" placeholder="Քանակը պահեստում" required>
+                    
+                    <!-- Պատկերասրահից նկար ընտրելու դաշտ -->
+                    <div class="file-input-wrapper">
+                        <label for="prodImageFile" class="file-input-label" id="fileLabel">📸 Ընտրել նկարը պատկերասրահից</label>
+                        <input type="file" id="prodImageFile" accept="image/*" style="display: none;">
+                        <div class="upload-status" id="uploadStatus">Մշակվում է...</div>
+                        <img id="imagePreview" alt="Նախադիտում">
+                    </div>
+
+                    <textarea id="prodDesc" rows="4" placeholder="Ապրանքի նկարագրություն..."></textarea>
+                    <button class="gold-btn" id="addProdBtn" style="width: 100%;">Ավելացնել Ցուցափեղկին</button>
                 </div>
-
-                <textarea id="prodDesc" rows="4" placeholder="Ապրանքի նկարագրություն..."></textarea>
-                <button class="gold-btn" id="addProdBtn" style="width: 100%;">Ավելացնել Ցուցափեղկին</button>
             </div>
-        </div>
 
-        <!-- ՊԱՏՎԵՐՆԵՐԻ ՑՈՒՑԱԴՐՄԱՆ ԲԱԺԻՆ -->
+            <!-- ՊԱՏՎԵՐՆԵՐԻ ՑՈՒՑԱԴՐՄԱՆ ԲԱԺԻՆ -->
+            <div class="admin-section">
+                <h2>Ստացված Պատվերներ (Real-time)</h2>
+                <div id="ordersListContainer">
+                    <p style="color: #888; text-align: center;">Պատվերներ չկան...</p>
+                </div>
+            </div>
+
+        </div> <!-- /.admin-grid -->
+
+        <!-- ԱՊՐԱՆՔՆԵՐԻ ԿԱՌԱՎԱՐՄԱՆ ԼՐԱՑՈՒՑԻՉ ԲԱԺԻՆ (Նոր բլոկ՝ ամբողջ լայնությամբ) -->
         <div class="admin-section">
-            <h2>Ստացված Պատվերներ (Real-time)</h2>
-            <div id="ordersListContainer">
-                <p style="color: #888; text-align: center;">Պատվերներ չկան...</p>
+            <h2>Հրապարակված Օծանելիքների Կառավարում</h2>
+            <div class="table-responsive">
+                <table class="admin-products-table">
+                    <thead>
+                        <tr>
+                            <th>Նկար</th>
+                            <th>Անուն</th>
+                            <th>Բրենդ</th>
+                            <th>Գին</th>
+                            <th>Պահեստ</th>
+                            <th>Գործողություն</th>
+                        </tr>
+                    </thead>
+                    <tbody id="adminProductsList">
+                        <tr>
+                            <td colspan="6" style="color: #888; text-align: center; padding: 20px;">Ապրանքներ չեն գտնվել...</td>
+                        </tr>
+                    </tbody>
+                </table>
             </div>
         </div>
 
+    </div> <!-- /.admin-container -->
+
+
+    <!-- ԽՄԲԱԳՐՄԱՆ ՄՈԴԱԼ ՊԱՏՈՒՀԱՆ (EDIT MODAL) -->
+    <div id="editProductModal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal" onclick="closeEditModal()">&times;</span>
+            <h2 style="margin-bottom: 20px;">Խմբագրել Ապրանքը</h2>
+            
+            <form id="editProductForm">
+                <!-- Թաքնված ID դաշտ -->
+                <input type="hidden" id="editProductId">
+                
+                <label for="editProductName">Ապրանքի անուն</label>
+                <input type="text" id="editProductName" required>
+                
+                <label for="editProductBrand">Բրենդ</label>
+                <input type="text" id="editProductBrand" required>
+                
+                <label for="editProductPrice">Գին (֏)</label>
+                <input type="number" id="editProductPrice" required>
+
+                <label for="editProductStock">Քանակը պահեստում</label>
+                <input type="number" id="editProductStock" required>
+                
+                <label for="editProductDesc">Նկարագրություն</label>
+                <textarea id="editProductDesc" rows="4"></textarea>
+                
+                <button type="submit" class="gold-btn" style="width: 100%; padding: 12px; margin-top: 10px;">Պահպանել Փոփոխությունները</button>
+            </form>
+        </div>
     </div>
+
 
     <!-- Firebase SDK Importmap (Առանց Storage-ի, մաքուր Firestore-ով) -->
     <script type="importmap">
