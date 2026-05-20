@@ -234,10 +234,12 @@ header {
 .product-detail-img {
     flex: 1;
     height: 360px;
-    background: linear-gradient(45deg, #1a1a1a, #2a2a2a);
+    width: 100%;
+    background: #1a1a1a;
     border: 1px solid #333;
     border-radius: 12px;
-    object-fit: cover;
+    object-fit: contain;
+    display: block;
 }
 
 .product-detail-info {
@@ -491,7 +493,7 @@ header {
 
     /* ԱՊՐԱՆՔՆԵՐԻ ՔԱՐՏԵՐԸ ՀԵՌԱԽՈՍՈՎ (Գեղեցիկ 2 Սյունակ) */
     .products-container {
-        grid-template-columns: repeat(2, 1fr); /* Դառնում է 2 սյունակ իրար կողք */
+        grid-template-columns: repeat(2, 1fr);
         gap: 15px;
         padding: 15px;
     }
@@ -502,7 +504,7 @@ header {
     }
 
     .product-img-placeholder {
-        height: 160px; /* Փոքրացնում ենք նկարի բարձրությունը */
+        height: 160px;
         margin-bottom: 10px;
     }
 
@@ -527,17 +529,18 @@ header {
         width: 90% !important;
         padding: 20px !important;
         max-height: 85vh;
-        overflow-y: auto; /* Եթե երկար լինի, կարելի է թերթել */
+        overflow-y: auto;
     }
 
     .product-detail-flex {
-        flex-direction: column; /* Նկարն ու տեքստը գալիս են իրար տակ */
+        flex-direction: column;
         gap: 15px;
     }
 
     .product-detail-img {
         width: 100%;
-        height: 200px;
+        height: 240px;
+        object-fit: contain;
     }
 
     .product-detail-info h2 {
@@ -575,7 +578,7 @@ header {
     }
 
     .form-section {
-        position: static; /* Անջատում ենք sticky-ն հեռախոսի վրա */
+        position: static;
     }
 
     .form-section input, 
@@ -583,7 +586,7 @@ header {
     .form-section select, 
     .form-section button,
     #fileLabel {
-        font-size: 16px !important; /* Կանխում է iOS Safari-ի Zoom լինելը */
+        font-size: 16px !important;
         padding: 14px !important;
     }
 
