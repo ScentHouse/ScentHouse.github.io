@@ -116,7 +116,9 @@ function handleSort() {
 }
 window.handleSort = handleSort;
 
+// ===================================================
 // 6. ԱՊՐԱՆՔԻ ՄԵԾԱՑՎԱԾ ՊԱՏՈՒՀԱՆ
+// ===================================================
 function openProductModal(id) {
     const product = dbProducts.find(p => p.id === id);
     if (!product) return;
@@ -125,10 +127,13 @@ function openProductModal(id) {
     document.getElementById('modalProductBrand').innerText = product.brand;
     document.getElementById('modalProductPrice').innerText = product.price + " ֏";
     
-    // Ցուցադրում ենք նկարը մոդալի div-ի մեջ
-    document.getElementById('modalProductImg').style.background = `url('${product.image || ''}') center/cover #222`;
+    // ՃԻՇՏ ՏԱՐԲԵՐԱԿ. Քանի որ HTML-ում <img> տեգ է, փոխում ենք src-ն, ոչ թե background-ը
+    const modalImg = document.getElementById('modalProductImg');
+    if (modalImg) {
+        modalImg.src = product.image || ''; 
+    }
     
-    if(document.getElementById('modalProductDesc') && product.description) {
+    if (document.getElementById('modalProductDesc') && product.description) {
         document.getElementById('modalProductDesc').innerText = product.description;
     }
     
