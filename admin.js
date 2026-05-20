@@ -1,7 +1,4 @@
-// Ջնջիր հին import-ները և փոխարինիր սրանցով՝ ուղիղ HTML-ի գլոբալ օբյեկտից
-const firebase = window.firebase;
-const db = window.db; // Եթե ներքևում արդեն ունես const db = getFirestore(), սա ուղղակի կփոխարինի դրան
-// FIREBASE CONFIGURATION
+// FIREBASE CONFIGURATION & GLOBAL OBJECTS
 const firebaseConfig = {
   apiKey: "AIzaSyCDyaaJoqgLlxsqglqMT-AfEk1abHhpWU0",
   authDomain: "scenthouse-a7e94.firebaseapp.com",
@@ -12,8 +9,11 @@ const firebaseConfig = {
   measurementId: "G-D5XXG99KHM"
 };
 
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
+// Ինիցիալիզացիա հին (v8 Global CDN) ձևով
+if (!firebase.apps.length) {
+    firebase.initializeApp(firebaseConfig);
+}
+const db = firebase.firestore();
 
 let finalImageBase64 = ""; // Այստեղ կպահվի ավելացվող սեղմված նկարի կոդը
 let editImageBase64 = "";  // Այստեղ կպահվի խմբագրվող նկարի կոդը
@@ -87,14 +87,14 @@ document.getElementById('addProdBtn').addEventListener('click', async () => {
     }
 
     try {
-        await addDoc(collection(db, "products"), {
+        await db.collection("products").add({
             name: name,
             brand: brand,
             price: price,
             stock: stock,
             image: finalImageBase64,
             description: description,
-            createdAt: new Date()
+            createdAt: firebase.firestore.FieldValue.serverTimestamp() // Օգտագործում ենք սերվերի ժամանակը ավելի ճշգրիտ դասավորության համար
         });
 
         alert(`«${name}» օծանելիքը հաջողությամբ ավելացվեց բազա:`);
@@ -117,12 +117,9 @@ document.getElementById('addProdBtn').addEventListener('click', async () => {
 });
 
 // 3. ԱՊՐԱՆՔՆԵՐԻ ՍՏԱՑՈՒՄ ԻՐԱԿԱՆ ԺԱՄԱՆԱԿՈՒՄ (REAL-TIME ԼՍՈՂ)
-const productsCollectionRef = collection(db, "products");
-const prodQuery = query(productsCollectionRef, orderBy("createdAt", "desc"));
-
-onSnapshot(prodQuery, (snapshot) => {
+db.collection("products").orderBy("createdAt", "desc").onSnapshot((snapshot) => {
     const tableBody = document.getElementById('adminProductsList');
-    if (!tableBody) return; // Ապահովության համար, եթե ID-ն սխալ լինի HTML-ում
+    if (!tableBody) return;
     
     tableBody.innerHTML = "";
 
@@ -135,7 +132,6 @@ onSnapshot(prodQuery, (snapshot) => {
         const product = productDoc.data();
         const productId = productDoc.id;
 
-        // Պահում ենք տվյալները կոճակի մեջ որպես attribute՝ մոդալում հեշտ բացելու համար
         tableBody.innerHTML += `
             <tr id="product-${productId}">
                 <td><img src="${product.image || 'assets/no-image.png'}" width="50" height="50" style="object-fit:cover; border-radius:4px;"></td>
@@ -145,7 +141,7 @@ onSnapshot(prodQuery, (snapshot) => {
                 <td>${product.stock} հատ</td>
                 <td>
                     <button class="btn-edit" onclick="editProduct('${productId}', \`${encodeURIComponent(JSON.stringify(product))}\`)" style="background:transparent; border:none; cursor:pointer; font-size:16px; margin-right:10px;">✏️</button>
-                    <button class="btn-delete" onclick="deleteProduct('${productId}', '${product.name}')" style="background:transparent; border:none; cursor:pointer; font-size:16px;">🗑️</button>
+                    <button class="btn-delete" onclick="deleteProduct('${productId}', '${product.name.replace(/'/g, "\\'")}')" style="background:transparent; border:none; cursor:pointer; font-size:16px;">🗑️</button>
                 </td>
             </tr>
         `;
@@ -156,7 +152,7 @@ onSnapshot(prodQuery, (snapshot) => {
 async function deleteProduct(id, name) {
     if (confirm(`Վստա՞հ եք, որ ցանկանում եք ջնջել «${name}» ապրանքը բազայից:`)) {
         try {
-            await deleteDoc(doc(db, "products", id));
+            await db.collection("products").doc(id).delete();
             alert("Ապրանքը հաջողությամբ ջնջվեց։");
         } catch (error) {
             console.error("Error deleting product: ", error);
@@ -180,8 +176,8 @@ function editProduct(id, encodedData) {
     // ՑՈՒՑԱԴՐՈՒՄ ԵՆՔ ԸՆԹԱՑԻԿ ՆԿԱՐԸ ՄՈԴԱԼԻ ՄԵՋ
     const preview = document.getElementById('editImagePreview');
     if (preview) {
-        preview.src = product.image; // Տեղադրում ենք բազայի նկարի կոդը
-        preview.style.display = "block"; // ԱՊԱՀՈՎՈՒՄ ԵՆՔ, ՈՐ ՆԿԱՐԸ ԵՐԵՎԱ (display: none-ը փոխում ենք block)
+        preview.src = product.image; 
+        preview.style.display = "block"; 
     }
     
     // Լռելյայն հին նկարն ենք պահում, եթե նորը չընտրվի
@@ -256,8 +252,7 @@ if (saveEditBtn) {
         }
 
         try {
-            const productDocRef = doc(db, "products", currentEditingProductId);
-            await updateDoc(productDocRef, {
+            await db.collection("products").doc(currentEditingProductId).update({
                 name: name,
                 brand: brand,
                 price: price,
@@ -283,15 +278,11 @@ function closeEditModal() {
     currentEditingProductId = null;
     editImageBase64 = "";
     const fileInput = document.getElementById('editProdImageFile');
-    if (fileInput) fileInput.value = ""; // Մաքրում ենք ընտրված ֆայլը
+    if (fileInput) fileInput.value = ""; 
 }
 
-
 // 9. ՊԱՏՎԵՐՆԵՐԻ ՍՏԱՑՈՒՄ ԻՐԱԿԱՆ ԺԱՄԱՆԱԿՈՒՄ (REAL-TIME)
-const ordersCollectionRef = collection(db, "orders");
-const q = query(ordersCollectionRef, orderBy("createdAt", "desc"));
-
-onSnapshot(q, (snapshot) => {
+db.collection("orders").orderBy("createdAt", "desc").onSnapshot((snapshot) => {
     const container = document.getElementById('ordersListContainer');
     if (!container) return;
     
@@ -314,7 +305,7 @@ onSnapshot(q, (snapshot) => {
         }
 
         let dateString = "Նոր պատվեր";
-        if (order.createdAt) {
+        if (order.createdAt && typeof order.createdAt.toDate === 'function') {
             const date = order.createdAt.toDate();
             dateString = date.toLocaleString('hy-AM');
         }
@@ -349,7 +340,7 @@ onSnapshot(q, (snapshot) => {
 async function deleteOrder(id) {
     if (confirm("Ցանկանու՞մ եք ջնջել այս պատվերը պատմությունից:")) {
         try {
-            await deleteDoc(doc(db, "orders", id));
+            await db.collection("orders").doc(id).delete();
         } catch (error) {
             alert("Չհաջողվեց ջնջել պատվերը. " + error);
         }
