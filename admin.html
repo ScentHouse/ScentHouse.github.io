@@ -7,7 +7,6 @@
     <link rel="stylesheet" href="style.css">
     <style>
         body { background: #0b0b0b; color: #fff; font-family: sans-serif; padding: 20px; }
-        /* Փոխում ենք grid-ը, որ աղյուսակը գեղեցիկ տեղավորվի ներքևում */
         .admin-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-bottom: 30px; }
         .admin-container { max-width: 1200px; margin: 0 auto; }
         .admin-section { background: #141414; padding: 20px; border-radius: 8px; border: 1px solid #d4af37; margin-bottom: 30px; }
@@ -31,15 +30,13 @@
         .admin-products-table th, .admin-products-table td { padding: 12px; border-bottom: 1px solid #222; }
         .admin-products-table th { background-color: #1a1a1a; color: #d4af37; font-weight: bold; text-transform: uppercase; font-size: 12px; letter-spacing: 0.5px; }
         .admin-products-table tr:hover { background: #1c1c1c; }
-        .btn-action { background: none; border: none; font-size: 16px; cursor: pointer; padding: 5px 8px; transition: transform 0.2s; }
-        .btn-action:hover { transform: scale(1.2); }
-
+        
         /* ԽՄԲԱԳՐՄԱՆ ՄՈԴԱԼ ՊԱՏՈՒՀԱՆ (EDIT MODAL) */
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.85); justify-content: center; align-items: center; z-index: 2000; backdrop-filter: blur(5px); }
-        .modal-content { background: #141414; border: 1px solid #d4af37; padding: 25px; width: 450px; max-width: 90%; position: relative; border-radius: 8px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); color: #fff; }
+        .modal-content { background: #141414; border: 1px solid #d4af37; padding: 25px; width: 450px; max-width: 90%; position: relative; border-radius: 8px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); color: #fff; max-height: 90vh; overflow-y: auto; }
         .close-modal { position: absolute; right: 20px; top: 15px; font-size: 24px; cursor: pointer; color: #888; transition: color 0.2s; }
         .close-modal:hover { color: #ff4757; }
-        .modal label { display: block; font-size: 13px; color: #d4af37; margin-bottom: 5px; font-weight: bold; }
+        .modal label { display: block; font-size: 13px; color: #d4af37; margin-bottom: 5px; font-weight: bold; margin-top: 10px; }
     </style>
 </head>
 <body>
@@ -60,7 +57,6 @@
                     <input type="number" id="prodPrice" placeholder="Գինը (ՀՀ դրամով, միայն թիվ)" required>
                     <input type="number" id="prodStock" placeholder="Քանակը պահեստում" required>
                     
-                    <!-- Պատկերասրահից նկար ընտրելու դաշտ -->
                     <div class="file-input-wrapper">
                         <label for="prodImageFile" class="file-input-label" id="fileLabel">📸 Ընտրել նկարը պատկերասրահից</label>
                         <input type="file" id="prodImageFile" accept="image/*" style="display: none;">
@@ -83,7 +79,7 @@
 
         </div> <!-- /.admin-grid -->
 
-        <!-- ԱՊՐԱՆՔՆԵՐԻ ԿԱՌԱՎԱՐՄԱՆ ԼՐԱՑՈՒՑԻՉ ԲԱԺԻՆ (Նոր բլոկ՝ ամբողջ լայնությամբ) -->
+        <!-- ԱՊՐԱՆՔՆԵՐԻ ԿԱՌԱՎԱՐՄԱՆ ԲԱԺԻՆ -->
         <div class="admin-section">
             <h2>Հրապարակված Օծանելիքների Կառավարում</h2>
             <div class="table-responsive">
@@ -111,37 +107,40 @@
 
 
     <!-- ԽՄԲԱԳՐՄԱՆ ՄՈԴԱԼ ՊԱՏՈՒՀԱՆ (EDIT MODAL) -->
+    <!-- ID-ները համապատասխանեցված են admin.js-ի հետ -->
     <div id="editProductModal" class="modal">
         <div class="modal-content">
             <span class="close-modal" onclick="closeEditModal()">&times;</span>
-            <h2 style="margin-bottom: 20px;">Խմբագրել Ապրանքը</h2>
+            <h2 style="margin-bottom: 20px; color: #d4af37;">✏️ Խմբագրել Ապրանքը</h2>
             
-            <form id="editProductForm">
-                <!-- Թաքնված ID դաշտ -->
-                <input type="hidden" id="editProductId">
+            <div id="editProductForm">
+                <label for="editProdName">Ապրանքի անուն</label>
+                <input type="text" id="editProdName" required>
                 
-                <label for="editProductName">Ապրանքի անուն</label>
-                <input type="text" id="editProductName" required>
+                <label for="editProdBrand">Բրենդ</label>
+                <input type="text" id="editProdBrand" required>
                 
-                <label for="editProductBrand">Բրենդ</label>
-                <input type="text" id="editProductBrand" required>
-                
-                <label for="editProductPrice">Գին (֏)</label>
-                <input type="number" id="editProductPrice" required>
+                <label for="editProdPrice">Գին (֏)</label>
+                <input type="number" id="editProdPrice" required>
 
-                <label for="editProductStock">Քանակը պահեստում</label>
-                <input type="number" id="editProductStock" required>
+                <label for="editProdStock">Քանակը պահեստում</label>
+                <input type="number" id="editProdStock" required>
                 
-                <label for="editProductDesc">Նկարագրություն</label>
-                <textarea id="editProductDesc" rows="4"></textarea>
+                <label for="editProdDesc">Նկարագրություն</label>
+                <textarea id="editProdDesc" rows="4"></textarea>
+
+                <label>Փոխել նկարը (ցանկության դեպքում)</label>
+                <input type="file" id="editProdImageFile" accept="image/*" style="margin-bottom: 10px;">
                 
-                <button type="submit" class="gold-btn" style="width: 100%; padding: 12px; margin-top: 10px;">Պահպանել Փոփոխությունները</button>
-            </form>
+                <img id="editImagePreview" src="" alt="Նախադիտում" style="display:none; width:80px; height:80px; object-fit:cover; margin-bottom: 15px; border-radius:4px; border: 1px solid #d4af37;">
+                
+                <button type="button" class="gold-btn" id="saveEditProdBtn" style="width: 100%; padding: 12px; margin-top: 10px; cursor: pointer;">Պահպանել Փոփոխությունները</button>
+            </div>
         </div>
     </div>
 
 
-    <!-- Firebase SDK Importmap (Առանց Storage-ի, մաքուր Firestore-ով) -->
+    <!-- Firebase SDK Importmap -->
     <script type="importmap">
       {
         "imports": {
