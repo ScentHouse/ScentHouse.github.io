@@ -5,18 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ScentHouse — Admin Panel</title>
     <link rel="stylesheet" href="style.css">
-    <!-- Firebase-ի հիմնական կորիզը -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/9.22.0/firebase-app-compat.min.js" crossorigin="anonymous"></script>
-<!-- Firestore տվյալների բազան -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/9.22.0/firebase-firestore-compat.min.js" crossorigin="anonymous"></script>
     <style>
         body { background: #0b0b0b; color: #fff; font-family: sans-serif; padding: 20px; }
-        .admin-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-bottom: 30px; }
-        .admin-container { max-width: 1200px; margin: 0 auto; }
-        .admin-section { background: #141414; padding: 20px; border-radius: 8px; border: 1px solid #d4af37; margin-bottom: 30px; }
+        .admin-container { max-width: 1200px; margin: 0 auto; display: grid; grid-template-columns: 1fr 1fr; gap: 30px; }
+        .admin-section { background: #141414; padding: 20px; border-radius: 8px; border: 1px solid #d4af37; }
         h2 { color: #d4af37; border-bottom: 1px solid #333; padding-bottom: 10px; margin-top: 0; }
-        input, textarea, select { width: 100%; padding: 10px; margin-bottom: 12px; background: #222; border: 1px solid #444; color: #fff; border-radius: 4px; box-sizing: border-box; }
-        input:focus, textarea:focus, select:focus { border-color: #d4af37; outline: none; }
+        input, textarea { width: 100%; padding: 10px; margin-bottom: 12px; background: #222; border: 1px solid #444; color: #fff; border-radius: 4px; box-sizing: border-box; }
+        input:focus, textarea:focus { border-color: #d4af37; outline: none; }
         .file-input-wrapper { margin-bottom: 12px; }
         .file-input-label { display: block; background: #222; border: 1px dashed #d4af37; color: #d4af37; padding: 12px; text-align: center; border-radius: 4px; cursor: pointer; font-weight: bold; }
         .file-input-label:hover { background: #1a1a1a; }
@@ -28,19 +23,19 @@
         .btn-back:hover { background: #333; }
         .upload-status { font-size: 13px; color: #aaa; margin-top: -5px; margin-bottom: 10px; display: none; }
 
-        /* ԱՊՐԱՆՔՆԵՐԻ ԱՂՅՈՒՍԱԿԻ ՍՏԻԼԵՐԸ */
-        .table-responsive { overflow-x: auto; margin-top: 15px; }
-        .admin-products-table { width: 100%; border-collapse: collapse; text-align: left; background: #141414; color: #fff; font-size: 14px; }
+        /* Ապրանքների աղյուսակի ստիլերը */
+        .admin-products-table { width: 100%; border-collapse: collapse; text-align: left; background: #141414; color: #fff; font-size: 14px; margin-top: 15px; }
         .admin-products-table th, .admin-products-table td { padding: 12px; border-bottom: 1px solid #222; }
-        .admin-products-table th { background-color: #1a1a1a; color: #d4af37; font-weight: bold; text-transform: uppercase; font-size: 12px; letter-spacing: 0.5px; }
+        .admin-products-table th { background-color: #1a1a1a; color: #d4af37; font-weight: bold; }
         .admin-products-table tr:hover { background: #1c1c1c; }
         
-        /* ԽՄԲԱԳՐՄԱՆ ՄՈԴԱԼ ՊԱՏՈՒՀԱՆ (EDIT MODAL) */
-        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.85); justify-content: center; align-items: center; z-index: 2000; backdrop-filter: blur(5px); }
-        .modal-content { background: #141414; border: 1px solid #d4af37; padding: 25px; width: 450px; max-width: 90%; position: relative; border-radius: 8px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); color: #fff; max-height: 90vh; overflow-y: auto; }
-        .close-modal { position: absolute; right: 20px; top: 15px; font-size: 24px; cursor: pointer; color: #888; transition: color 0.2s; }
-        .close-modal:hover { color: #ff4757; }
-        .modal label { display: block; font-size: 13px; color: #d4af37; margin-bottom: 5px; font-weight: bold; margin-top: 10px; }
+        /* Խմբագրման մոդալ պատուհանի ստիլերը */
+        .edit-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.85); justify-content: center; align-items: center; z-index: 2000; }
+        .edit-modal-content { background: #141414; border: 1px solid #d4af37; padding: 25px; width: 450px; max-width: 90%; position: relative; border-radius: 8px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); color: #fff; max-height: 90vh; overflow-y: auto; }
+        .edit-modal label { display: block; font-size: 13px; color: #d4af37; margin-bottom: 5px; font-weight: bold; margin-top: 10px; }
+        
+        /* ՍԱ ԱՎԵԼԱՑՐԵԼ ԵՄ, ՈՐ ՄՈԴԱԼԻ ՄԵՋԻ ՆԿԱՐԸ ՄԵԾ ՈՒ ՍԻՐՈՒՆ ԵՐԵՎԱ */
+        #editImagePreview { width: 100%; max-height: 200px; object-fit: contain; margin: 15px 0; border-radius: 6px; border: 1px solid #d4af37; display: none; }
     </style>
 </head>
 <body>
@@ -49,44 +44,42 @@
 
     <div class="admin-container">
         
-        <!-- Վերևի երկսյունակ ցանցը (Ավելացում և Պատվերներ) -->
-        <div class="admin-grid">
-            
-            <!-- ԱՊՐԱՆՔ ԱՎԵԼԱՑՆԵԼՈՒ ԲԱԺԻՆ -->
-            <div class="admin-section">
-                <h2>Ավելացնել Նոր Օծանելիք</h2>
-                <div id="productForm">
-                    <input type="text" id="prodName" placeholder="Ապրանքի Անուն (օր.՝ Bleu de Chanel)" required>
-                    <input type="text" id="prodBrand" placeholder="Բրենդ (օր.՝ Chanel)" required>
-                    <input type="number" id="prodPrice" placeholder="Գինը (ՀՀ դրամով, միայն թիվ)" required>
-                    <input type="number" id="prodStock" placeholder="Քանակը պահեստում" required>
-                    
-                    <div class="file-input-wrapper">
-                        <label for="prodImageFile" class="file-input-label" id="fileLabel">📸 Ընտրել նկարը պատկերասրահից</label>
-                        <input type="file" id="prodImageFile" accept="image/*" style="display: none;">
-                        <div class="upload-status" id="uploadStatus">Մշակվում է...</div>
-                        <img id="imagePreview" alt="Նախադիտում">
-                    </div>
-
-                    <textarea id="prodDesc" rows="4" placeholder="Ապրանքի նկարագրություն..."></textarea>
-                    <button class="gold-btn" id="addProdBtn" style="width: 100%;">Ավելացնել Ցուցափեղկին</button>
+        <!-- ԱՊՐԱՆՔ ԱՎԵԼԱՑՆԵԼՈՒ ԲԱԺԻՆ -->
+        <div class="admin-section">
+            <h2>Ավելացնել Նոր Օծանելիք</h2>
+            <div id="productForm">
+                <input type="text" id="prodName" placeholder="Ապրանքի Անուն (օր.՝ Bleu de Chanel)" required>
+                <input type="text" id="prodBrand" placeholder="Բրենդ (օր.՝ Chanel)" required>
+                <input type="number" id="prodPrice" placeholder="Գինը (ՀՀ դրամով, միայն թիվ)" required>
+                <input type="number" id="prodStock" placeholder="Քանակը պահեստում" required>
+                
+                <div class="file-input-wrapper">
+                    <label for="prodImageFile" class="file-input-label" id="fileLabel">📸 Ընտրել նկարը պատկերասրահից</label>
+                    <input type="file" id="prodImageFile" accept="image/*" style="display: none;">
+                    <div class="upload-status" id="uploadStatus">Մշակվում է...</div>
+                    <img id="imagePreview" alt="Նախադիտում">
                 </div>
+
+                <textarea id="prodDesc" rows="4" placeholder="Ապրանքի նկարագրություն..."></textarea>
+                <button class="gold-btn" id="addProdBtn" style="width: 100%;">Ավելացնել Ցուցափեղկին</button>
             </div>
+        </div>
 
-            <!-- ՊԱՏՎԵՐՆԵՐԻ ՑՈՒՑԱԴՐՄԱՆ ԲԱԺԻՆ -->
-            <div class="admin-section">
-                <h2>Ստացված Պատվերներ (Real-time)</h2>
-                <div id="ordersListContainer">
-                    <p style="color: #888; text-align: center;">Պատվերներ չկան...</p>
-                </div>
+        <!-- ՊԱՏՎԵՐՆԵՐԻ ՑՈՒՑԱԴՐՄԱՆ ԲԱԺԻՆ -->
+        <div class="admin-section">
+            <h2>Ստացված Պատվերներ (Real-time)</h2>
+            <div id="ordersListContainer">
+                <p style="color: #888; text-align: center;">Պատվերներ չկան...</p>
             </div>
+        </div>
 
-        </div> <!-- /.admin-grid -->
+    </div>
 
-        <!-- ԱՊՐԱՆՔՆԵՐԻ ԿԱՌԱՎԱՐՄԱՆ ԲԱԺԻՆ -->
+    <!-- ՀՐԱՊԱՐԱԿՎԱԾ ԱՊՐԱՆՔՆԵՐԻ ԿԱՌԱՎԱՐՈՒՄ -->
+    <div style="max-width: 1200px; margin: 30px auto 0 auto;">
         <div class="admin-section">
             <h2>Հրապարակված Օծանելիքների Կառավարում</h2>
-            <div class="table-responsive">
+            <div style="overflow-x: auto;">
                 <table class="admin-products-table">
                     <thead>
                         <tr>
@@ -106,16 +99,13 @@
                 </table>
             </div>
         </div>
+    </div>
 
-    </div> <!-- /.admin-container -->
-
-
-    <!-- ԽՄԲԱԳՐՄԱՆ ՄՈԴԱԼ ՊԱՏՈՒՀԱՆ (EDIT MODAL) -->
-    <!-- ID-ները համապատասխանեցված են admin.js-ի հետ -->
-    <div id="editProductModal" class="modal">
-        <div class="modal-content">
-            <span class="close-modal" onclick="closeEditModal()">&times;</span>
-            <h2 style="margin-bottom: 20px; color: #d4af37;">✏️ Խմբագրել Ապրանքը</h2>
+    <!-- ԽՄԲԱԳՐՄԱՆ ՄՈԴԱԼ ՊԱՏՈՒՀԱՆ -->
+    <div id="editProductModal" class="edit-modal">
+        <div class="edit-modal-content">
+            <span style="position: absolute; right: 20px; top: 15px; font-size: 24px; cursor: pointer; color: #888;" onclick="closeEditModal()">&times;</span>
+            <h2 style="margin-bottom: 20px; color: #d4af37; border-bottom: none; padding-bottom: 0;">✏️ Խմբագրել Ապրանքը</h2>
             
             <div id="editProductForm">
                 <label for="editProdName">Ապրանքի անուն</label>
@@ -133,18 +123,26 @@
                 <label for="editProdDesc">Նկարագրություն</label>
                 <textarea id="editProdDesc" rows="4"></textarea>
 
+                <!-- Այստեղ կերևա ընթացիկ նկարը, երբ պատուհանը մեծ բացվի -->
+                <img id="editImagePreview" src="" alt="Ընթացիկ Նկար">
+
                 <label>Փոխել նկարը (ցանկության դեպքում)</label>
                 <input type="file" id="editProdImageFile" accept="image/*" style="margin-bottom: 10px;">
                 
-                <img id="editImagePreview" src="" alt="Նախադիտում" style="display:none; width:80px; height:80px; object-fit:cover; margin-bottom: 15px; border-radius:4px; border: 1px solid #d4af37;">
-                
-                <button type="button" class="gold-btn" id="saveEditProdBtn" style="width: 100%; padding: 12px; margin-top: 10px; cursor: pointer;">Պահպանել Փոփոխությունները</button>
+                <button class="gold-btn" id="saveEditProdBtn" style="width: 100%; padding: 12px; margin-top: 10px; cursor: pointer;">Պահպանել Փոփոխությունները</button>
             </div>
         </div>
     </div>
 
-
-
+    <!-- ՔՈ ՍԿԶԲՆԱԿԱՆ FIREBASE SDK IMPORTMAP-Ը -->
+    <script type="importmap">
+      {
+        "imports": {
+          "firebase/app": "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js",
+          "firebase/firestore": "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js"
+        }
+      }
+    </script>
 
     <script type="module" src="admin.js"></script>
 </body>
