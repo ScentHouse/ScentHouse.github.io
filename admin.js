@@ -24,34 +24,65 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-let finalImageBase64 = ""; // Այստեղ կպահվի նկարի տեքստային կոդը
+let finalImageBase64 = ""; // Այստեղ կպահվի սեղմված նկարի կոդը
 
-// 1. ՆԿԱՐԸ ՊԱՏԿԵՐԱՍՐԱՀԻՑ ԸՆՏՐԵԼՈՒ ԵՎ ՏԵՔՍՏԻ (BASE64) ՎԵՐԱԾԵԼՈՒ ՖՈՒՆԿՑԻԱՆ
+// 1. ՆԿԱՐԸ ՊԱՏԿԵՐԱՍՐԱՀԻՑ ԸՆՏՐԵԼՈՒ ԵՎ ԱՎՏՈՄԱՏ ՍԵՂՄԵԼՈՒ (COMPRESS) ՖՈՒՆԿՑԻԱՆ
 document.getElementById('prodImageFile').addEventListener('change', function(e) {
     const file = e.target.files[0];
     if (!file) return;
 
-    // Ցուցադրում ենք նախադիտումը (Preview) ադմինին
-    const preview = document.getElementById('imagePreview');
-    preview.src = URL.createObjectURL(file);
-    preview.style.display = "block";
-
     const statusDiv = document.getElementById('uploadStatus');
     const label = document.getElementById('fileLabel');
     statusDiv.style.display = "block";
-    statusDiv.innerText = "Նկարը մշակվում է...";
+    statusDiv.innerText = "Նկարը օպտիմալացվում և սեղմվում է...";
     statusDiv.style.color = "#d4af37";
 
-    // Օգտագործում ենք FileReader՝ նկարը տեքստ սարքելու համար (ՉԻ ՕԳՏԱԳՈՐԾՈՒՄ ԻՆՏԵՐՆԵՏ)
     const reader = new FileReader();
-    reader.onloadend = function() {
-        finalImageBase64 = reader.result; // Նկարի ամբողջական տեքստային կոդը
-        
-        statusDiv.innerText = "✓ Նկարը պատրաստ է ավելացման";
-        statusDiv.style.color = "#00ff00";
-        label.innerText = "✓ Նկարը ընտրված է";
+    reader.onload = function(event) {
+        const img = new Image();
+        img.onload = function() {
+            // Ստեղծում ենք վիրտուալ կտավ (Canvas) նկարը փոքրացնելու համար
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+
+            // Սահմանում ենք առավելագույն չափսը (օրինակ՝ 600 պիքսել)
+            const MAX_WIDTH = 600;
+            const MAX_HEIGHT = 600;
+            let width = img.width;
+            let height = img.height;
+
+            if (width > height) {
+                if (width > MAX_WIDTH) {
+                    height *= MAX_WIDTH / width;
+                    width = MAX_WIDTH;
+                }
+            } else {
+                if (height > MAX_HEIGHT) {
+                    width *= MAX_HEIGHT / height;
+                    height = MAX_HEIGHT;
+                }
+            }
+
+            canvas.width = width;
+            canvas.height = height;
+
+            // Նկարում ենք փոքրացված նկարը կտավի վրա
+            ctx.drawImage(img, 0, 0, width, height);
+
+            // Վերածում ենք Base64-ի և սեղմում որակը մինչև 70% (0.7)
+            finalImageBase64 = canvas.toDataURL('image/jpeg', 0.7);
+
+            // Ցուցադրում ենք նախադիտումը (Preview)
+            const preview = document.getElementById('imagePreview');
+            preview.src = finalImageBase64;
+            preview.style.display = "block";
+            
+            statusDiv.innerText = "✓ Նկարը պատրաստ է (Օպտիմալացված)";
+            statusDiv.style.color = "#00ff00";
+            label.innerText = "✓ Նկարը ընտրված է";
+        };
+        img.src = event.target.result;
     };
-    
     reader.readAsDataURL(file);
 });
 
@@ -69,20 +100,19 @@ document.getElementById('addProdBtn').addEventListener('click', async () => {
     }
 
     try {
-        // Ավելացնում ենք Firestore "products" հավաքածուի մեջ
         await addDoc(collection(db, "products"), {
             name: name,
             brand: brand,
             price: price,
             stock: stock,
-            image: finalImageBase64, // Բազա է գնում հենց նկարի տեքստը
+            image: finalImageBase64, // Բազա է գնում արդեն սեղմված, թեթև տեքստը
             description: description,
             createdAt: new Date()
         });
 
         alert(`«${name}» օծանելիքը հաջողությամբ ավելացվեց բազա:`);
         
-        // Մաքրում ենք դաշտերը հաջորդ ապրանքի համար
+        // Մաքրում ենք դաշտերը
         document.getElementById('prodName').value = "";
         document.getElementById('prodBrand').value = "";
         document.getElementById('prodPrice').value = "";
@@ -116,7 +146,6 @@ onSnapshot(q, (snapshot) => {
         const order = orderDoc.data();
         const orderId = orderDoc.id;
 
-        // Հավաքում ենք պատվիրված ապրանքների HTML-ը
         let itemsHtml = "";
         if (order.items && Array.isArray(order.items)) {
             order.items.forEach(item => {
@@ -124,14 +153,12 @@ onSnapshot(q, (snapshot) => {
             });
         }
 
-        // Ստուգում ենք ամսաթիվը
         let dateString = "Նոր պատվեր";
         if (order.createdAt) {
             const date = order.createdAt.toDate();
             dateString = date.toLocaleString('hy-AM');
         }
 
-        // Ավելացնում ենք պատվերի քարտը էջին
         container.innerHTML += `
             <div class="order-card" id="order-${orderId}">
                 <div class="order-meta">Ժամանակ՝ ${dateString}</div>
@@ -169,5 +196,4 @@ async function deleteOrder(id) {
     }
 }
 
-// Քանի որ սա type="module" է, ֆունկցիան կցում ենք window-ին, որ HTML-ի button-ը տեսնի այն
 window.deleteOrder = deleteOrder;
