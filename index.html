@@ -27,44 +27,17 @@
         <div class="search-filter-wrapper" style="display: flex; gap: 10px; flex-grow: 1; max-width: 600px; margin: 0 20px;">
             <input type="text" class="search-bar" id="searchInput" placeholder="Որոնել" oninput="handleSearch()" style="flex-grow: 2;">
             
-            <!-- Գնով տեսակավորման սելեկտ -->
-        <!-- Գնով տեսակավորման սելեկտ -->
-<select id="priceSort" onchange="handleSort()" class="custom-select">
-    <option value="default">Ստանդարտ տեսակավորում</option>
-    <option value="lowToHigh">Գինը՝ աճման ↑</option>
-    <option value="highToLow">Գինը՝ նվազման ↓</option>
-</select>
-
-<style>
-.custom-select {
-    background: #111;
-    color: #d4af37;
-    border: 1px solid #d4af37;
-    padding: 6px 12px;
-    border-radius: 4px;
-    cursor: pointer;
-    font-family: sans-serif;
-    font-size: 14px;
-    outline: none;
-    transition: all 0.3s ease;
-}
-
-/* Որպեսզի երբ մկնիկը բերեն վրան, թեթևակի լուսավորվի */
-.custom-select:hover {
-    background: #1a1a1a;
-    box-shadow: 0 0 5px rgba(212, 175, 55, 0.3);
-}
-
-/* Սա օգնում է, որ option-ները բացվելիս սպիտակ ֆոնով չլինեն որոշ համակարգերում */
-.custom-select option {
-    background: #111;
-    color: #d4af37;
-}
-</style>
-
+       
+<!-- Գնով տեսակավորման սելեկտ -->
+            <select id="priceSort" onchange="handleSort()" style="background: #111; color: #d4af37; border: 1px solid #d4af37; padding: 5px 10px; border-radius: 4px; cursor: pointer;">
+                <option value="default">Ստանդարտ</option>
+                <option value="lowToHigh">Գինը՝ աճման ↑</option>
+                <option value="highToLow">Գինը՝ նվազման ↓</option>
+            </select>
+        </div>       
 
             
-        </div>
+   
 
         <div class="actions">
             <button class="btn-admin" onclick="openAdmin()">Admin</button>
