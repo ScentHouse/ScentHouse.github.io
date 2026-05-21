@@ -4,6 +4,16 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ScentHouse — Admin Panel</title>
+    <link rel="manifest" href="./manifest.json">
+<script>
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('./sw.js')
+        .then(reg => console.log('PWA-ն պատրաստ է:', reg.scope))
+        .catch(err => console.log('PWA-ի սխալ:', err));
+    });
+  }
+</script>
     <link rel="stylesheet" href="style.css">
     <style>
         body { background: #0b0b0b; color: #fff; font-family: sans-serif; padding: 20px; }
